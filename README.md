@@ -100,25 +100,55 @@ Note: The terraforming commands below have been tested successfully using the fo
     aws ecs list-task-definitions --region us-east-1
     ```
 
-    2.4.1. Display StocksDB Task Definition 
+    2.4.1. Display the StocksDB Task Definition 
 
     ```
     TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksdb-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
     aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
     ```
 
-    2.4.2. Display StocksAPI Task Definition 
+    2.4.2. Display the StocksAPI Task Definition 
 
     ```
     TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksapi-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
     aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
     ```
 
-    2.4.3. Display StocksAPP Task Definition 
+    **Note**: Review the `environment` block. This contains the creedentials and connection string used by the **Stocks API** to connect to the backed database. The database FQDN `db.cloudacademy.terraform.local` is registered automatically using the AWS Cloud Map service.
+
+    ```
+    "environment": [
+        {
+            "name": "DB_CONNSTR",
+            "value": "jdbc:mysql://db.cloudacademy.terraform.local:3306/stocks"
+        },
+        {
+            "name": "DB_USER",
+            "value": "root"
+        },
+        {
+            "name": "DB_PASSWORD",
+            "value": "fo11owth3wh1t3r4bb1t"
+        }
+    ]
+    ```
+
+    2.4.3. Display the StocksAPP Task Definition 
 
     ```
     TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksapp-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
     aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
+    ```
+
+    **Note**: Review the `environment` block. This should now contain the ALB FQDN. Terraform injects the correct value at provisioning time dynamically. At runtime, this value is loaded into the web app, informing it where to route all AJAX calls (back via the ALB to the API target group).
+
+    ```
+    "environment": [
+        {
+            "name": "REACT_APP_APIHOSTPORT",
+            "value": "ecs-demo-public-alb-1100561753.us-east-1.elb.amazonaws.com"
+        }
+    ]
     ```
 
 3. Examine Cloud Map Service Discovery Resources
