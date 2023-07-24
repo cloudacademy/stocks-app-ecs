@@ -100,21 +100,21 @@ Note: The terraforming commands below have been tested successfully using the fo
     aws ecs list-task-definitions --region us-east-1
     ```
 
-    2.4.1. Display the StocksDB Task Definition 
+    2.4.1. Display the **Stocks DB** Task Definition 
 
     ```
     TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksdb-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
     aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
     ```
 
-    2.4.2. Display the StocksAPI Task Definition 
+    2.4.2. Display the **Stocks API** Task Definition 
 
     ```
     TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksapi-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
     aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
     ```
 
-    **Note**: Review the `environment` block. This contains the credentials and connection string used by the **Stocks API** to connect to the backed database. The database FQDN `db.cloudacademy.terraform.local` is registered automatically using the AWS Cloud Map service.
+    **Note**: Review the `environment` block. This contains the credentials and a connection string used by the **Stocks API** to connect to the backend database. The database FQDN `db.cloudacademy.terraform.local` is registered automatically using the AWS Cloud Map service.
 
     ```
     "environment": [
@@ -133,7 +133,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     ]
     ```
 
-    2.4.3. Display the StocksAPP Task Definition 
+    2.4.3. Display the **Stocks APP** (frontend) Task Definition 
 
     ```
     TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksapp-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
