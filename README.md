@@ -114,7 +114,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
     ```
 
-    **Note**: Review the `environment` block. This contains the creedentials and connection string used by the **Stocks API** to connect to the backed database. The database FQDN `db.cloudacademy.terraform.local` is registered automatically using the AWS Cloud Map service.
+    **Note**: Review the `environment` block. This contains the credentials and connection string used by the **Stocks API** to connect to the backed database. The database FQDN `db.cloudacademy.terraform.local` is registered automatically using the AWS Cloud Map service.
 
     ```
     "environment": [
