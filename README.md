@@ -1,6 +1,8 @@
 ## ECS and Stocks Cloud Native App Deployment
 The following instructions are provided to demonstrate how to provision a new ECS cluster and automatically deploy a fully functional Stocks cloud native web application into it.
 
+**Note**: For simplicity purposes only (to speedup deployment time etc.), the DB has been containerized. In production systems this should be setup using RDS.
+
 ![Stocks App](/docs/stocks.png)
 
 ### ECS Architecture
@@ -46,6 +48,8 @@ Source Code and Artifacts:
 
 - GitHub Repo: https://github.com/cloudacademy/stocks-db
 - Container Image: [cloudacademydevops/stocks-db](https://hub.docker.com/r/cloudacademydevops/stocks-db)
+
+**Note**: For simplicity purposes only (to speedup deployment time etc.), the DB has been containerized. In production systems this should be setup using RDS.
 
 ### Prerequisites
 Ensure that the following tools are installed and configured appropriately.
