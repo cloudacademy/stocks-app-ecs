@@ -150,11 +150,11 @@ Note: The terraforming commands below have been tested successfully using the fo
 
 4. Generate and Test Stocks URL Endpoint
 
-Execute the following command to generate Stocks URL:
+    Execute the following command to generate Stocks URL:
 
-```
-ALB_FQDN=$(aws elbv2 describe-load-balancers --region us-east-1 | jq -r --arg name "ecs-demo-public-alb" '.LoadBalancers | .[] | select(.LoadBalancerName=="\($name)") | .DNSName')
-echo http://$ALB_FQDN
-```
+    ```
+    ALB_FQDN=$(aws elbv2 describe-load-balancers --region us-east-1 | jq -r --arg name "ecs-demo-public-alb" '.LoadBalancers | .[] | select(.LoadBalancerName=="\($name)") | .DNSName')
+    echo http://$ALB_FQDN
+    ```
 
-Copy the URL from the previous output and browse to it within your own browser.
+    Copy the URL from the previous output and browse to it within your own browser.
