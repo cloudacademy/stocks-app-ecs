@@ -4,7 +4,7 @@ The following instructions are provided to demonstrate how to provision a new EC
 ![Stocks App](/docs/stocks.png)
 
 ### ECS Architecture
-The following architecture diagram documents the ECS Fargate cluster, Services, Tasks, ALB, and Stocks cloud native web application:
+The following architecture diagram documents the ECS Fargate cluster, Services, Tasks, ALB, Cloud Map (service registration and discovery), and Stocks cloud native web application:
 
 ![Stocks App](/docs/ecs-stocks.png)
 
@@ -69,7 +69,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     terraform init
     ```
 
-    1.2. Provision a new ECS Fargate cluster, Services, Tasks, ALB, and Stocks cloud native web application automatically. Execute the following command:
+    1.2. Provision a new ECS Fargate cluster, Services, Tasks, ALB, Cloud Map (service registration and discovery), and Stocks cloud native web application automatically. Execute the following command:
 
     ```
     terraform apply -auto-approve
