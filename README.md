@@ -100,21 +100,21 @@ Note: The terraforming commands below have been tested successfully using the fo
     aws ecs list-task-definitions --region us-east-1
     ```
 
-        2.4.1. Display StocksDB Task Definition 
+    2.4.1. Display StocksDB Task Definition 
 
         ```
         TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksdb-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
         aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
         ```
 
-        2.4.2. Display StocksAPI Task Definition 
+    2.4.2. Display StocksAPI Task Definition 
 
         ```
         TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksapi-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
         aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
         ```
 
-        2.4.3. Display StocksAPP Task Definition 
+    2.4.3. Display StocksAPP Task Definition 
 
         ```
         TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksapp-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
