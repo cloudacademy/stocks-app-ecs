@@ -185,13 +185,24 @@ Note: The terraforming commands below have been tested successfully using the fo
     aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID
     ```
 
-4. Generate and Test Stocks URL Endpoint
+4. Generate and Test Stocks API Endpoint
 
-    Execute the following command to generate Stocks URL:
+    Execute the following command to generate Stocks API URL:
+
+    ```
+    ALB_FQDN=$(aws elbv2 describe-load-balancers --region us-east-1 | jq -r --arg name "ecs-demo-public-alb" '.LoadBalancers | .[] | select(.LoadBalancerName=="\($name)") | .DNSName')
+    echo http://$ALB_FQDN/api/stocks/csv
+    ```
+
+    Copy the URL from the previous output and browse to it within your own browser. Confirm that the Stocks CSV formatted data is accessible.
+
+5. Generate and Test Stocks APP (frontend) Endpoint
+
+    Execute the following command to generate Stocks API URL:
 
     ```
     ALB_FQDN=$(aws elbv2 describe-load-balancers --region us-east-1 | jq -r --arg name "ecs-demo-public-alb" '.LoadBalancers | .[] | select(.LoadBalancerName=="\($name)") | .DNSName')
     echo http://$ALB_FQDN
     ```
 
-    Copy the URL from the previous output and browse to it within your own browser.
+    Copy the URL from the previous output and browse to it within your own browser. Confirm that the Stocks App (frontend) loads successfully.

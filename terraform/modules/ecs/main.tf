@@ -53,7 +53,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
   ])
 }
 
-#Create services for app services
+#Create public services (api and frontend)
 resource "aws_ecs_service" "public_service" {
   for_each = {
     for service, config in var.service_config :
@@ -67,8 +67,8 @@ resource "aws_ecs_service" "public_service" {
   desired_count   = each.value.desired_count
 
   network_configuration {
-    subnets          = each.value.is_public == true ? var.public_subnets : var.private_subnets
-    assign_public_ip = each.value.is_public == true ? true : false
+    subnets          = var.public_subnets
+    assign_public_ip = true
     security_groups  = [aws_security_group.webapp_security_group.id]
   }
 
@@ -79,8 +79,8 @@ resource "aws_ecs_service" "public_service" {
   }
 }
 
-#Create db service
-resource "aws_ecs_service" "db_service" {
+#Create private services (db)
+resource "aws_ecs_service" "private_service" {
   for_each = {
     for service, config in var.service_config :
     service => config if !config.is_public
@@ -93,8 +93,8 @@ resource "aws_ecs_service" "db_service" {
   desired_count   = each.value.desired_count
 
   network_configuration {
-    subnets          = each.value.is_public == true ? var.public_subnets : var.private_subnets
-    assign_public_ip = each.value.is_public == true ? true : false
+    subnets          = var.private_subnets
+    assign_public_ip = false
     security_groups  = [aws_security_group.db_service_security_group.id]
   }
 
