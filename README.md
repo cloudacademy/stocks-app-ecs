@@ -1,10 +1,10 @@
 ## ECS and Stocks Cloud Native App Deployment
-The following instructions are provided to demonstrate how to provision a new ECS cluster and automatically deploy a fully functional Stocks cloud native web application.
+The following instructions are provided to demonstrate how to provision a new ECS cluster and automatically deploy a fully functional Stocks cloud native web application into it.
 
 ![Stocks App](/docs/stocks.png)
 
 ### ECS Architecture
-The following architecture diagram documents the ECS Fargate cluster, Services, Tasks, ALB, Cloud Map (service registration and discovery), and Stocks cloud native web application:
+The following architecture diagram documents an ECS Fargate cluster, Services, Tasks, ALB, Cloud Map (service registration and discovery), and Stocks cloud native web application setup:
 
 ![Stocks App](/docs/ecs-stocks.png)
 
