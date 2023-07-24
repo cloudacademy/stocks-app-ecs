@@ -104,7 +104,7 @@ microservice_config = {
     host_port      = 8080
     cpu            = 256
     memory         = 512
-    desired_count  = 1
+    desired_count  = 2
     environment = [
       {
       name = "DB_CONNSTR"
@@ -127,8 +127,8 @@ microservice_config = {
       priority          = 1
     }
     auto_scaling = {
-      max_capacity = 2
-      min_capacity = 1
+      max_capacity = 4
+      min_capacity = 2
       cpu = {
         target_value = 75
       }
@@ -145,7 +145,7 @@ microservice_config = {
     host_port      = 8080
     cpu            = 256
     memory         = 512
-    desired_count  = 1
+    desired_count  = 2
     environment = [
       {
       name = "REACT_APP_APIHOSTPORT"
@@ -160,8 +160,8 @@ microservice_config = {
       priority          = 2
     }
     auto_scaling = {
-      max_capacity = 2
-      min_capacity = 1
+      max_capacity = 4
+      min_capacity = 2
       cpu = {
         target_value = 75
       }
