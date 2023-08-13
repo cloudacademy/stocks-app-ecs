@@ -41,7 +41,7 @@ Source Code and Artifacts:
 
 #### Stocks DB
 
-Aurora RDS DB (serverless v1):
+Aurora RDS DB (serverless v1) SQL database:
 
 - MySQL 5.7
 
