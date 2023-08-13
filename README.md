@@ -7,7 +7,7 @@ https://github.com/cloudacademy/stocks-app-eks
 ![Stocks App](/docs/stocks.png)
 
 ### ECS Architecture
-The following architecture diagram documents an ECS Fargate cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), and Stocks cloud native web application setup:
+The following architecture diagram documents an ECS Fargate cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), Secrets Manager, and Stocks cloud native web application setup:
 
 ![Stocks App](/docs/ecs-stocks-v2.png)
 
