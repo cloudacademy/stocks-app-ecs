@@ -7,6 +7,25 @@ resource "aws_cloudwatch_log_group" "ecs_cw_log_group" {
   name     = lower("${each.key}-logs")
 }
 
+resource "aws_security_group" "webapp_security_group" {
+  name   = "webapp_security_group"
+  vpc_id = var.vpc_id
+
+  ingress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    security_groups = [var.public_alb_security_group_id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 #Create task definitions for app services
 resource "aws_ecs_task_definition" "ecs_task_definition" {
   for_each                 = var.service_config
@@ -25,10 +44,23 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       memory    = each.value.memory
       essential = true
 
-      environment = each.value.environment == null ? [] : [
-        for env in each.value.environment : {
-          name  = env.name
-          value = env.name != "REACT_APP_APIHOSTPORT" ? env.value : var.public_alb_fqdn
+      environment = each.key == "Stocks-API" ? [
+        {
+          name  = "DB_CONNSTR"
+          value = "jdbc:mysql://${var.db_endpoint}:3306/cloudacademy"
+        },
+        {
+          name  = "DB_USER"
+          value = "root"
+        },
+        {
+          name  = "DB_PASSWORD"
+          value = "followthewhiterabbit"
+        }
+        ] : [
+        {
+          name  = "REACT_APP_APIHOSTPORT"
+          value = var.public_alb_fqdn
         }
       ]
 
@@ -76,30 +108,6 @@ resource "aws_ecs_service" "public_service" {
     target_group_arn = var.public_alb_target_groups[each.key].arn
     container_name   = each.value.name
     container_port   = each.value.container_port
-  }
-}
-
-#Create private services (db)
-resource "aws_ecs_service" "private_service" {
-  for_each = {
-    for service, config in var.service_config :
-    service => config if !config.is_public
-  }
-
-  name            = "${each.value.name}-Service"
-  cluster         = aws_ecs_cluster.ecs_cluster.id
-  task_definition = aws_ecs_task_definition.ecs_task_definition[each.key].arn
-  launch_type     = "FARGATE"
-  desired_count   = each.value.desired_count
-
-  network_configuration {
-    subnets          = var.private_subnets
-    assign_public_ip = false
-    security_groups  = [aws_security_group.db_service_security_group.id]
-  }
-
-  service_registries {
-    registry_arn = var.service_registry_arn
   }
 }
 
@@ -155,43 +163,5 @@ resource "aws_appautoscaling_policy" "ecs_policy_cpu" {
     }
 
     target_value = each.value.auto_scaling.cpu.target_value
-  }
-}
-
-resource "aws_security_group" "db_service_security_group" {
-  name   = "service_security_group"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    security_groups = [aws_security_group.webapp_security_group.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_security_group" "webapp_security_group" {
-  name   = "webapp_security_group"
-  vpc_id = var.vpc_id
-
-  ingress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    security_groups = [var.public_alb_security_group.security_group_id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }

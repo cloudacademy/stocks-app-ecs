@@ -15,7 +15,7 @@ output "public-alb-target-groups" {
 }
 
 output "public-alb-fqdn" {
-  value = module.public_alb.alb_dns
+  value = module.public_alb.dns
 }
 
 output "ecs-task-execution-role-arn" {

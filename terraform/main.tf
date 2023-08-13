@@ -10,7 +10,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = "us-west-2"
 }
 
 data "aws_availability_zones" "available" {}
@@ -19,6 +19,12 @@ data "aws_availability_zones" "available" {}
 
 locals {
   public_alb_target_groups = { for service, config in var.microservice_config : service => config.alb_target_group if config.is_public }
+
+  rds = {
+    master_username = "root"
+    master_password = "followthewhiterabbit"
+    db_name         = "cloudacademy"
+  }
 }
 
 #====================================
@@ -42,28 +48,6 @@ module "vpc" {
 
 #====================================
 
-module "db_security_group" {
-  source        = "./modules/security-group"
-  name          = "${lower(var.app_name)}-internal-alb-sg"
-  description   = "${lower(var.app_name)}-internal-alb-sg"
-  vpc_id        = module.vpc.vpc_id
-  ingress_rules = var.db_config.ingress_rules
-  egress_rules  = var.db_config.egress_rules
-}
-
-#====================================
-
-module "public_alb_security_group" {
-  source        = "./modules/security-group"
-  name          = "${lower(var.app_name)}-public-alb-sg"
-  description   = "${lower(var.app_name)}-public-alb-sg"
-  vpc_id        = module.vpc.vpc_id
-  ingress_rules = var.public_alb_config.ingress_rules
-  egress_rules  = var.public_alb_config.egress_rules
-}
-
-#====================================
-
 module "public_alb" {
   source            = "./modules/alb"
   name              = "${lower(var.app_name)}-public-alb"
@@ -74,31 +58,59 @@ module "public_alb" {
   listener_port     = 80
   listener_protocol = "HTTP"
   listeners         = var.public_alb_config.listeners
-  security_groups   = [module.public_alb_security_group.security_group_id]
 }
 
 #====================================
 
-module "cloudmap" {
-  source = "./modules/cloudmap"
-  vpc_id = module.vpc.vpc_id
+# module "cloudmap" {
+#   source = "./modules/cloudmap"
+#   vpc_id = module.vpc.vpc_id
+# }
+
+#====================================
+
+module "secretsmanager" {
+  source          = "./modules/secretsmanager"
+  master_username = local.rds.master_username
+  master_password = local.rds.master_password
+  db_name         = local.rds.db_name
+}
+
+#====================================
+
+module "aurora" {
+  source              = "./modules/aurora"
+  vpc_id              = module.vpc.vpc_id
+  subnet_ids          = module.vpc.private_subnets
+  ingress_cidr_blocks = module.vpc.public_subnets_cidr_blocks
+  master_username     = local.rds.master_username
+  master_password     = local.rds.master_password
+  db_name             = local.rds.db_name
+  secret_manager_arn  = module.secretsmanager.arn
 }
 
 #====================================
 
 module "ecs" {
-  source                      = "./modules/ecs"
-  app_name                    = var.app_name
-  app_services                = var.app_services
-  region                      = var.region
-  service_config              = var.microservice_config
-  ecs_task_execution_role_arn = module.iam.ecs_task_execution_role_arn
-  vpc_id                      = module.vpc.vpc_id
-  private_subnets             = module.vpc.private_subnets
-  public_subnets              = module.vpc.public_subnets
-  public_alb_security_group   = module.public_alb_security_group
-  db_security_group           = module.db_security_group
-  public_alb_target_groups    = module.public_alb.target_groups
-  service_registry_arn        = module.cloudmap.service_registry_arn
-  public_alb_fqdn             = module.public_alb.alb_dns
+  source                       = "./modules/ecs"
+  app_name                     = var.app_name
+  app_services                 = var.app_services
+  region                       = var.region
+  service_config               = var.microservice_config
+  ecs_task_execution_role_arn  = module.iam.ecs_task_execution_role_arn
+  vpc_id                       = module.vpc.vpc_id
+  private_subnets              = module.vpc.private_subnets
+  public_subnets               = module.vpc.public_subnets
+  public_alb_security_group_id = module.public_alb.security_group_id
+  public_alb_target_groups     = module.public_alb.target_groups
+  db_endpoint                  = module.aurora.db_endpoint
+  public_alb_fqdn              = module.public_alb.dns
+
+  depends_on = [
+    module.iam,
+    module.vpc,
+    module.public_alb,
+    module.secretsmanager,
+    module.aurora,
+  ]
 }
