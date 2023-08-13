@@ -62,12 +62,8 @@ variable "service_config" {
   }))
 }
 
-variable "db_security_group" {
-  type = any
-}
-
-variable "public_alb_security_group" {
-  type = any
+variable "public_alb_security_group_id" {
+  type = string
 }
 
 variable "public_alb_target_groups" {
@@ -76,7 +72,7 @@ variable "public_alb_target_groups" {
   }))
 }
 
-variable "service_registry_arn" {
+variable "db_endpoint" {
   type = string
 }
 

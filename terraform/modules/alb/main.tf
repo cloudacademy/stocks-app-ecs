@@ -1,9 +1,35 @@
+resource "aws_security_group" "alb_security_group" {
+  name   = "alb_security_group"
+  vpc_id = var.vpc_id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_alb" "alb" {
   name               = var.name
   internal           = var.internal
   load_balancer_type = "application"
   subnets            = var.subnets
-  security_groups    = var.security_groups
+  security_groups    = [aws_security_group.alb_security_group.id]
 }
 
 #Dynamically create the alb target groups for app services

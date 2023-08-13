@@ -4,14 +4,12 @@ The following instructions are provided to demonstrate how to provision a new EC
 An equivalent **EKS** setup is located here:
 https://github.com/cloudacademy/stocks-app-eks
 
-**Note**: For simplicity purposes only (to speedup deployment time etc.), the DB has been containerized. In production systems this should be setup using RDS.
-
 ![Stocks App](/docs/stocks.png)
 
 ### ECS Architecture
-The following architecture diagram documents an ECS Fargate cluster, Services, Tasks, ALB, Cloud Map (service registration and discovery), and Stocks cloud native web application setup:
+The following architecture diagram documents an ECS Fargate cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), and Stocks cloud native web application setup:
 
-![Stocks App](/docs/ecs-stocks.png)
+![Stocks App](/docs/ecs-stocks-v2.png)
 
 ### Web Application Architecture
 The Stocks cloud native web app consists of the following 3 main components:
@@ -43,16 +41,9 @@ Source Code and Artifacts:
 
 #### Stocks DB
 
-Provisons and populates a SQL database using the following technology:
+Aurora RDS DB (serverless v1):
 
-- MySQL 8
-
-Source Code and Artifacts:
-
-- GitHub Repo: https://github.com/cloudacademy/stocks-db
-- Container Image: [cloudacademydevops/stocks-db](https://hub.docker.com/r/cloudacademydevops/stocks-db)
-
-**Note**: For simplicity purposes only (to speedup deployment time etc.), the DB has been containerized. In production systems this should be setup using RDS.
+- MySQL 5.7
 
 ### Prerequisites
 Ensure that the following tools are installed and configured appropriately.
@@ -76,7 +67,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     terraform init
     ```
 
-    1.2. Provision a new ECS Fargate cluster, Services, Tasks, ALB, Cloud Map (service registration and discovery), and Stocks cloud native web application automatically. Execute the following command:
+    1.2. Provision a new ECS Fargate cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), and Stocks cloud native web application automatically. Execute the following command:
 
     ```
     terraform apply -auto-approve
@@ -87,47 +78,40 @@ Note: The terraforming commands below have been tested successfully using the fo
     2.1. List Clusters
 
     ```
-    aws ecs list-clusters --region us-east-1
+    aws ecs list-clusters --region us-west-2
     ```
 
     2.2. List Cluster Services
 
     ```
-    aws ecs list-services --cluster ecs-demo-cluster --region us-east-1
+    aws ecs list-services --cluster ecs-demo-cluster --region us-west-2
     ```
 
     2.3. List Cluster Tasks
     ```
-    aws ecs list-tasks --cluster ecs-demo-cluster --region us-east-1
+    aws ecs list-tasks --cluster ecs-demo-cluster --region us-west-2
     ```
 
     2.4. List Task Definitions
 
     ```
-    aws ecs list-task-definitions --region us-east-1
+    aws ecs list-task-definitions --region us-west-2
     ```
 
-    2.4.1. Display the **Stocks DB** Task Definition 
+    2.4.1. Display the **Stocks API** Task Definition 
 
     ```
-    TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksdb-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
-    aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
+    TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-west-2 --service stocksapi-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
+    aws ecs describe-task-definition --region us-west-2 --task-definition $TASK_DEFN
     ```
 
-    2.4.2. Display the **Stocks API** Task Definition 
-
-    ```
-    TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksapi-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
-    aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
-    ```
-
-    **Note**: Review the `environment` block. This contains the credentials and a connection string used by the **Stocks API** to connect to the backend database. The database FQDN `db.cloudacademy.terraform.local` is registered automatically using the AWS Cloud Map service.
+    **Note**: Review the `environment` block. This contains the credentials and a connection string used by the **Stocks API** to connect to the Aurora RDS backend database.
 
     ```
     "environment": [
         {
             "name": "DB_CONNSTR",
-            "value": "jdbc:mysql://db.cloudacademy.terraform.local:3306/stocks"
+            "value": "jdbc:mysql://cloudacademy.cluster-abcd1234.us-west-2.rds.amazonaws.com:3306/cloudacademy"
         },
         {
             "name": "DB_USER",
@@ -135,16 +119,16 @@ Note: The terraforming commands below have been tested successfully using the fo
         },
         {
             "name": "DB_PASSWORD",
-            "value": "fo11owth3wh1t3r4bb1t"
+            "value": "followthewhiterabbit"
         }
     ]
     ```
 
-    2.4.3. Display the **Stocks APP** (frontend) Task Definition 
+    2.4.2. Display the **Stocks APP** (frontend) Task Definition 
 
     ```
-    TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-east-1 --service stocksapp-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
-    aws ecs describe-task-definition --region us-east-1 --task-definition $TASK_DEFN
+    TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-west-2 --service stocksapp-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
+    aws ecs describe-task-definition --region us-west-2 --task-definition $TASK_DEFN
     ```
 
     **Note**: Review the `environment` block. This should now contain the ALB FQDN. Terraform injects the correct value at provisioning time dynamically. At runtime, this value is loaded into the web app, informing it where to route all AJAX calls (back via the ALB to the API target group).
@@ -153,36 +137,23 @@ Note: The terraforming commands below have been tested successfully using the fo
     "environment": [
         {
             "name": "REACT_APP_APIHOSTPORT",
-            "value": "ecs-demo-public-alb-1100561753.us-east-1.elb.amazonaws.com"
+            "value": "ecs-demo-public-alb-1100561753.us-west-2.elb.amazonaws.com"
         }
     ]
     ```
 
-3. Examine Cloud Map Service Discovery Resources
+3. Examine Aurora RDS DB
 
-    3.1. List Namespaces
-
-    ```
-    aws servicediscovery list-namespaces --region us-east-1
-    ```
-
-    3.2. List Services
+    3.1. List Database Clusters
 
     ```
-    aws servicediscovery list-services --region us-east-1
+    aws rds describe-db-clusters --region us-west-2
     ```
 
-    3.3. Check Route53 Hosted Zone
+    3.2. List Database Cluster Endpoints
 
     ```
-    aws route53 list-hosted-zones-by-name --dns-name cloudacademy.terraform.local
-    ```
-
-    3.4. Check Route53 Hosted Zone Resource Records
-
-    ```
-    ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name cloudacademy.terraform.local | jq -r --arg name "cloudacademy.terraform.local." '.HostedZones | .[] | select(.Name=="\($name)") | .Id')
-    aws route53 list-resource-record-sets --hosted-zone-id $ZONE_ID
+    aws rds describe-db-cluster-endpoints --db-cluster-identifier cloudacademy --region us-west-2
     ```
 
 4. Generate and Test Stocks API Endpoint
@@ -190,7 +161,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     Execute the following command to generate Stocks API URL:
 
     ```
-    ALB_FQDN=$(aws elbv2 describe-load-balancers --region us-east-1 | jq -r --arg name "ecs-demo-public-alb" '.LoadBalancers | .[] | select(.LoadBalancerName=="\($name)") | .DNSName')
+    ALB_FQDN=$(aws elbv2 describe-load-balancers --region us-west-2 | jq -r --arg name "ecs-demo-public-alb" '.LoadBalancers | .[] | select(.LoadBalancerName=="\($name)") | .DNSName')
     echo http://$ALB_FQDN/api/stocks/csv
     ```
 
@@ -201,7 +172,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     Execute the following command to generate Stocks API URL:
 
     ```
-    ALB_FQDN=$(aws elbv2 describe-load-balancers --region us-east-1 | jq -r --arg name "ecs-demo-public-alb" '.LoadBalancers | .[] | select(.LoadBalancerName=="\($name)") | .DNSName')
+    ALB_FQDN=$(aws elbv2 describe-load-balancers --region us-west-2 | jq -r --arg name "ecs-demo-public-alb" '.LoadBalancers | .[] | select(.LoadBalancerName=="\($name)") | .DNSName')
     echo http://$ALB_FQDN
     ```
 

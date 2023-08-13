@@ -47,43 +47,12 @@ variable "public_subnets" {
 #ALB
 #====================================
 
-variable "db_config" {
-  type = object({
-    name = string
-    ingress_rules = list(object({
-      from_port   = number
-      to_port     = number
-      protocol    = string
-      cidr_blocks = list(string)
-    }))
-    egress_rules = list(object({
-      from_port   = number
-      to_port     = number
-      protocol    = string
-      cidr_blocks = list(string)
-    }))
-  })
-  description = "Internal ALB configuration"
-}
-
 variable "public_alb_config" {
   type = object({
     name = string
     listeners = map(object({
       listener_port     = number
       listener_protocol = string
-    }))
-    ingress_rules = list(object({
-      from_port   = number
-      to_port     = number
-      protocol    = string
-      cidr_blocks = list(string)
-    }))
-    egress_rules = list(object({
-      from_port   = number
-      to_port     = number
-      protocol    = string
-      cidr_blocks = list(string)
     }))
   })
   description = "Public ALB configuration"
