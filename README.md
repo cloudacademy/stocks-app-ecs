@@ -146,9 +146,9 @@ Note: The terraforming commands below have been tested successfully using the fo
     ]
     ```
 
-    - `REACT_APP_APIHOSTPORT` represents the public facing ALB that the Stock App sits behind. This value is loaded dynamically into the web app, informing it where to route all AJAX calls to (back via the ALB to the API target group).
+    - `REACT_APP_APIHOSTPORT` represents the public facing ALB that the Stock App sits behind. This value is loaded dynamically into the web app, informing it where to route all AJAX calls to (back via the ALB).
 
-    - `NGINX_APP_APIHOSTPORT` is dynamically inserted into the Nginx config file (see below) to proxy API traffic downstream to the API tasks. [AWS Cloud Map](https://aws.amazon.com/cloud-map/) is used to provide service discovery for the API tasks.
+    - `NGINX_APP_APIHOSTPORT` is dynamically inserted into the Stock App's Nginx config file (see below) to proxy API traffic downstream to the API tasks. [AWS Cloud Map](https://aws.amazon.com/cloud-map/) is used to provide service discovery for the API tasks. The FQDN `api.cloudacademy.terraform.local` is automatically registered within Route53 by Cloud Map and contains records for each individual API task (private IP address) spun up in the ECS cluster.
 
     ```
     upstream api-backend {
