@@ -34,12 +34,16 @@ microservice_config = {
   "Stocks-API" = {
     name           = "stocksapi"
     image          = "cloudacademydevops/stocks-api:v2"
-    is_public      = true
+    is_public      = false
     container_port = 8080
     host_port      = 8080
     cpu            = 256
     memory         = 512
     desired_count  = 2
+    service_discovery = {
+      dns = "api.cloudacademy.terraform.local",
+      port = 8080
+    }
     environment = [
       {
       name = "DB_CONNSTR"
@@ -54,13 +58,6 @@ microservice_config = {
       value = "followthewhiterabbit"
       }
     ]
-    alb_target_group = {
-      port              = 8080
-      protocol          = "HTTP"
-      path_pattern      = ["/api*"]
-      health_check_path = "/api/stocks/ok"
-      priority          = 1
-    }
     auto_scaling = {
       max_capacity = 4
       min_capacity = 2
@@ -74,7 +71,7 @@ microservice_config = {
   },
   "Stocks-App" = {
     name           = "stocksapp"
-    image          = "cloudacademydevops/stocks-app:v1"
+    image          = "cloudacademydevops/stocks-app:v2"
     is_public      = true
     container_port = 8080
     host_port      = 8080
@@ -85,6 +82,10 @@ microservice_config = {
       {
       name = "REACT_APP_APIHOSTPORT"
       value = "" # dynamically injected at provisioning time by terraform
+      },
+      {
+      name = "NGINX_APP_APIHOSTPORT"
+      value = "api.cloudacademy.terraform.local:8080" # cloud map service discovery
       }
     ]
     alb_target_group = {

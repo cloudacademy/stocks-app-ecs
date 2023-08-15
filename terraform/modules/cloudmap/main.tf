@@ -4,8 +4,8 @@ resource "aws_service_discovery_private_dns_namespace" "cloudacademy" {
   vpc         = var.vpc_id
 }
 
-resource "aws_service_discovery_service" "cloudacademy" {
-  name = "db"
+resource "aws_service_discovery_service" "api" {
+  name = "api"
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.cloudacademy.id
