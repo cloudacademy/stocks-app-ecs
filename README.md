@@ -73,6 +73,24 @@ Note: The terraforming commands below have been tested successfully using the fo
     terraform apply -auto-approve
     ```
 
+2. After the Terraforming completes successfully, an additional **1-2 minutes** is required for the entire system to stabilise. A pre-formatted script is provided in the Terraform output, named `web_app_wait_command`. Copy this script and execute it locally to be notified when the Stock App is ready to be browsed to:
+
+    ```
+    until curl -Is --max-time 5 http://ecs-demo-public-alb-1234567890.us-west-2.elb.amazonaws.com | grep '200 OK'; do echo preparing...; sleep 5; done; echo; echo -e 'Ready!!'
+    ```
+
+    Example Output:
+    ```
+    preparing...
+    preparing...
+    preparing...
+    preparing...
+    preparing...
+    HTTP/1.1 200 OK
+
+    Ready!!
+    ```
+
 2. Examine ECS Cluster Resources
 
     2.1. List Clusters
@@ -217,6 +235,8 @@ Note: The terraforming commands below have been tested successfully using the fo
 6. Troubleshooting
 
     [ECS Exec](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html) has been enabled on the ECS services (App and API). Exec into any running task to troubleshoot using the following command:
+
+    Note: The Session Manager plugin for the AWS CLI needs to be installed locally.
 
     ```
     aws ecs execute-command \

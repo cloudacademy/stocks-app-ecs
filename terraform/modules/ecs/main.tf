@@ -171,11 +171,12 @@ resource "aws_ecs_service" "private_service" {
     service => config if !config.is_public
   }
 
-  name            = "${each.value.name}-Service"
-  cluster         = aws_ecs_cluster.ecs_cluster.id
-  task_definition = aws_ecs_task_definition.ecs_task_definition[each.key].arn
-  launch_type     = "FARGATE"
-  desired_count   = each.value.desired_count
+  name                   = "${each.value.name}-Service"
+  cluster                = aws_ecs_cluster.ecs_cluster.id
+  task_definition        = aws_ecs_task_definition.ecs_task_definition[each.key].arn
+  launch_type            = "FARGATE"
+  desired_count          = each.value.desired_count
+  enable_execute_command = true
 
   network_configuration {
     subnets          = var.private_subnets
