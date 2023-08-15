@@ -36,6 +36,10 @@ variable "service_config" {
     cpu            = number
     memory         = number
     desired_count  = number
+    service_discovery = optional(object({
+      dns  = string
+      port = number
+    }))
     environment = list(object({
       name  = string
       value = string
@@ -77,5 +81,9 @@ variable "db_endpoint" {
 }
 
 variable "public_alb_fqdn" {
+  type = string
+}
+
+variable "service_registry_arn" {
   type = string
 }

@@ -62,10 +62,10 @@ module "public_alb" {
 
 #====================================
 
-# module "cloudmap" {
-#   source = "./modules/cloudmap"
-#   vpc_id = module.vpc.vpc_id
-# }
+module "cloudmap" {
+  source = "./modules/cloudmap"
+  vpc_id = module.vpc.vpc_id
+}
 
 #====================================
 
@@ -82,7 +82,7 @@ module "aurora" {
   source              = "./modules/aurora"
   vpc_id              = module.vpc.vpc_id
   subnet_ids          = module.vpc.private_subnets
-  ingress_cidr_blocks = module.vpc.public_subnets_cidr_blocks
+  ingress_cidr_blocks = module.vpc.private_subnets_cidr_blocks
   master_username     = local.rds.master_username
   master_password     = local.rds.master_password
   db_name             = local.rds.db_name
@@ -105,6 +105,7 @@ module "ecs" {
   public_alb_target_groups     = module.public_alb.target_groups
   db_endpoint                  = module.aurora.db_endpoint
   public_alb_fqdn              = module.public_alb.dns
+  service_registry_arn         = module.cloudmap.service_registry_arn
 
   depends_on = [
     module.iam,

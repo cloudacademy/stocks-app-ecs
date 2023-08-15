@@ -26,11 +26,59 @@ resource "aws_security_group" "webapp_security_group" {
   }
 }
 
+resource "aws_security_group" "api_security_group" {
+  name   = "api_security_group"
+  vpc_id = var.vpc_id
+
+  ingress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    security_groups = [aws_security_group.webapp_security_group.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_iam_role" "ecs_exec_task_role" {
+  name               = "cloudacademy-ecs-exec-task-role"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+data "aws_iam_policy" "amazon_ssm_managed_instance_core" {
+  name = "AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "ecs-ssm-role-policy-attach" {
+  role       = aws_iam_role.ecs_exec_task_role.id
+  policy_arn = data.aws_iam_policy.amazon_ssm_managed_instance_core.arn
+}
+
 #Create task definitions for app services
 resource "aws_ecs_task_definition" "ecs_task_definition" {
   for_each                 = var.service_config
   family                   = "${lower(var.app_name)}-${each.key}"
   execution_role_arn       = var.ecs_task_execution_role_arn
+  task_role_arn            = aws_iam_role.ecs_exec_task_role.arn
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   memory                   = each.value.memory
@@ -51,16 +99,20 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         },
         {
           name  = "DB_USER"
-          value = "root"
+          value = each.value.environment[index(each.value.environment.*.name, "DB_USER")].value
         },
         {
           name  = "DB_PASSWORD"
-          value = "followthewhiterabbit"
+          value = each.value.environment[index(each.value.environment.*.name, "DB_PASSWORD")].value
         }
-        ] : [
+        ] : [ # "Stocks-APP"
         {
           name  = "REACT_APP_APIHOSTPORT"
           value = var.public_alb_fqdn
+        },
+        {
+          name  = "NGINX_APP_APIHOSTPORT"
+          value = join(":", [var.service_config["Stocks-API"].service_discovery.dns, var.service_config["Stocks-API"].service_discovery.port]) # cloud map service discovery
         }
       ]
 
@@ -85,18 +137,19 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
   ])
 }
 
-#Create public services (api and frontend)
+#Create public services (frontend)
 resource "aws_ecs_service" "public_service" {
   for_each = {
     for service, config in var.service_config :
     service => config if config.is_public
   }
 
-  name            = "${each.value.name}-Service"
-  cluster         = aws_ecs_cluster.ecs_cluster.id
-  task_definition = aws_ecs_task_definition.ecs_task_definition[each.key].arn
-  launch_type     = "FARGATE"
-  desired_count   = each.value.desired_count
+  name                   = "${each.value.name}-Service"
+  cluster                = aws_ecs_cluster.ecs_cluster.id
+  task_definition        = aws_ecs_task_definition.ecs_task_definition[each.key].arn
+  launch_type            = "FARGATE"
+  desired_count          = each.value.desired_count
+  enable_execute_command = true
 
   network_configuration {
     subnets          = var.public_subnets
@@ -110,6 +163,31 @@ resource "aws_ecs_service" "public_service" {
     container_port   = each.value.container_port
   }
 }
+
+#Create private services (api)
+resource "aws_ecs_service" "private_service" {
+  for_each = {
+    for service, config in var.service_config :
+    service => config if !config.is_public
+  }
+
+  name            = "${each.value.name}-Service"
+  cluster         = aws_ecs_cluster.ecs_cluster.id
+  task_definition = aws_ecs_task_definition.ecs_task_definition[each.key].arn
+  launch_type     = "FARGATE"
+  desired_count   = each.value.desired_count
+
+  network_configuration {
+    subnets          = var.private_subnets
+    assign_public_ip = false
+    security_groups  = [aws_security_group.api_security_group.id]
+  }
+
+  service_registries {
+    registry_arn = var.service_registry_arn
+  }
+}
+
 
 resource "aws_appautoscaling_target" "public_service_autoscaling" {
   for_each = {

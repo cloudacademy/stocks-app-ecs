@@ -71,6 +71,10 @@ variable "microservice_config" {
     cpu            = number
     memory         = number
     desired_count  = number
+    service_discovery = optional(object({
+      dns  = string
+      port = number
+    }))
     environment = optional(list(object({
       name  = string
       value = string
