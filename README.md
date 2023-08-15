@@ -7,9 +7,9 @@ https://github.com/cloudacademy/stocks-app-eks
 ![Stocks App](/docs/stocks.png)
 
 ### ECS Architecture
-The following architecture diagram documents an ECS Fargate cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), Secrets Manager, and Stocks cloud native web application setup:
+The following architecture diagram documents an ECS Fargate Cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), Secrets Manager, Cloud Map (service discovery), and Stocks cloud native web application setup:
 
-![Stocks App](/docs/ecs-stocks-v2.png)
+![Stocks App](/docs/ecs-stocks-v3.png)
 
 ### Web Application Architecture
 The Stocks cloud native web app consists of the following 3 main components:
@@ -67,7 +67,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     terraform init
     ```
 
-    1.2. Provision a new ECS Fargate cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), and Stocks cloud native web application automatically. Execute the following command:
+    1.2. Provision a new ECS Fargate cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), Cloud Map (service discovery), and Stocks cloud native web application automatically. Execute the following command:
 
     ```
     terraform apply -auto-approve
@@ -131,15 +131,51 @@ Note: The terraforming commands below have been tested successfully using the fo
     aws ecs describe-task-definition --region us-west-2 --task-definition $TASK_DEFN
     ```
 
-    **Note**: Review the `environment` block. This should now contain the ALB FQDN. Terraform injects the correct value at provisioning time dynamically. At runtime, this value is loaded into the web app, informing it where to route all AJAX calls (back via the ALB to the API target group).
+    **Note**: Review the `environment` block. This should now contain the ALB FQDN and API service discovery FQDN. Terraform injects the correct values at provisioning time dynamically.
 
     ```
     "environment": [
         {
             "name": "REACT_APP_APIHOSTPORT",
-            "value": "ecs-demo-public-alb-1100561753.us-west-2.elb.amazonaws.com"
+            "value": "ecs-demo-public-alb-1234567890.us-west-2.elb.amazonaws.com"
+        },
+        {
+            "name": "NGINX_APP_APIHOSTPORT",
+            "value": "api.cloudacademy.terraform.local:8080"
         }
     ]
+    ```
+
+    - `REACT_APP_APIHOSTPORT` represents the public facing ALB that the Stock App sits behind. This value is loaded dynamically into the web app, informing it where to route all AJAX calls to (back via the ALB to the API target group).
+
+    - `NGINX_APP_APIHOSTPORT` is dynamically inserted into the Nginx config file (see below) to proxy API traffic downstream to the API tasks. [AWS Cloud Map](https://aws.amazon.com/cloud-map/) is used to provide service discovery for the API tasks.
+
+    ```
+    upstream api-backend {
+    server ${NGINX_APP_APIHOSTPORT};
+    keepalive 20;
+    }
+
+    server {
+    listen 8080;
+    add_header Cache-Control no-cache;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+        try_files $uri $uri/ /index.html;
+        expires -1;
+    }
+
+    location /api/stocks/csv {
+        proxy_pass http://api-backend;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+    }
     ```
 
 3. Examine Aurora RDS DB
@@ -177,3 +213,25 @@ Note: The terraforming commands below have been tested successfully using the fo
     ```
 
     Copy the URL from the previous output and browse to it within your own browser. Confirm that the Stocks App (frontend) loads successfully.
+
+6. Troubleshooting
+
+    [ECS Exec](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html) has been enabled on the ECS services (App and API). Exec into any running task to troubleshoot using the following command:
+
+    ```
+    aws ecs execute-command \
+    --cluster ecs-demo-cluster \
+    --task <TASK ID> \
+    --container <CONTAINER NAME> \
+    --interactive --command "bash"
+    ```
+
+    Example:
+
+    ```
+    aws ecs execute-command \
+    --cluster ecs-demo-cluster \
+    --task 852341be5e0049809b5502360ada5a87 \
+    --container stocksapp \
+    --interactive --command "bash"
+    ```
