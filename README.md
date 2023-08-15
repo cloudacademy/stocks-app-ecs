@@ -75,6 +75,7 @@ Note: The terraforming commands below have been tested successfully using the fo
 
     1.3. After the Terraforming completes successfully, an additional **1-2 minutes** is required for the entire system to stabilise. A pre-formatted script is provided in the Terraform output, named `web_app_wait_command`. Copy this script and execute it locally to be notified when the Stock App is ready to be browsed to:
 
+    Example Command:
     ```
     until curl -Is --max-time 5 http://ecs-demo-public-alb-1234567890.us-west-2.elb.amazonaws.com | grep '200 OK'; do echo preparing...; sleep 5; done; echo; echo -e 'Ready!!'
     ```
