@@ -14,7 +14,7 @@ The following architecture diagram documents an ECS Fargate Cluster, Services, T
 ### Web Application Architecture
 The Stocks cloud native web app consists of the following 3 main components:
 
-#### Stocks Frontend (App)
+#### Stocks App (frontend)
 
 Implements a web UI using the following languages/frameworks:
 
@@ -160,7 +160,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     ]
     ```
 
-    2.4.2. Display the **Stocks APP** (frontend) Task Definition 
+    2.4.2. Display the **Stocks App** (frontend) Task Definition 
 
     ```
     TASK_DEFN=$(aws ecs describe-services --cluster ecs-demo-cluster --region us-west-2 --service stocksapp-Service --query "services[].taskDefinition" | jq -r ".[0]" | cut -d"/" -f2)
@@ -239,7 +239,7 @@ Note: The terraforming commands below have been tested successfully using the fo
 
     Copy the URL from the previous output and browse to it within your own browser. Confirm that the Stocks CSV formatted data is accessible.
 
-5. Generate and Test Stocks APP (frontend) Endpoint
+5. Generate and Test Stocks App (frontend) Endpoint
 
     Execute the following command to generate Stocks API URL:
 
