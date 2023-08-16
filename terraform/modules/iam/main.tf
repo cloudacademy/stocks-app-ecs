@@ -1,8 +1,3 @@
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name               = lower("${var.app_name}-ecs-task-execution-role")
-  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
-}
-
 data "aws_iam_policy_document" "assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -14,7 +9,34 @@ data "aws_iam_policy_document" "assume_role_policy" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
+#====================================
+
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name               = "cloudacademy-ecs-task-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+}
+
+data "aws_iam_policy" "amazon_ec2_container_service_for_ec2_role" {
+  name = "AmazonEC2ContainerServiceforEC2Role"
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy-attach" {
   role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+  policy_arn = data.aws_iam_policy.amazon_ec2_container_service_for_ec2_role.arn
+}
+
+#====================================
+
+resource "aws_iam_role" "ecs_exec_task_role" {
+  name               = "cloudacademy-ecs-exec-task-role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+}
+
+data "aws_iam_policy" "amazon_ssm_managed_instance_core" {
+  name = "AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "ecs-ssm-role-policy-attach" {
+  role       = aws_iam_role.ecs_exec_task_role.name
+  policy_arn = data.aws_iam_policy.amazon_ssm_managed_instance_core.arn
 }

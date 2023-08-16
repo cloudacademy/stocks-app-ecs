@@ -98,6 +98,7 @@ module "ecs" {
   region                       = var.region
   service_config               = var.microservice_config
   ecs_task_execution_role_arn  = module.iam.ecs_task_execution_role_arn
+  ecs_exec_task_role_arn       = module.iam.ecs_exec_task_role_arn
   vpc_id                       = module.vpc.vpc_id
   private_subnets              = module.vpc.private_subnets
   public_subnets               = module.vpc.public_subnets
