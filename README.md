@@ -254,10 +254,10 @@ Note: The terraforming commands below have been tested successfully using the fo
     --cluster ecs-demo-cluster \
     --task <TASK ID> \
     --container <CONTAINER NAME> \
-    --interactive --command "bash"
+    --interactive --command <COMMAND>
     ```
 
-    Example:
+    APP (frontend) Task Exec Example:
 
     ```
     aws ecs execute-command \
@@ -265,4 +265,14 @@ Note: The terraforming commands below have been tested successfully using the fo
     --task 852341be5e0049809b5502360ada5a87 \
     --container stocksapp \
     --interactive --command "bash"
+    ```
+
+    API Task Exec Example:
+
+    ```
+    aws ecs execute-command \
+    --cluster ecs-demo-cluster \
+    --task 852341be5e0049809b5502360ada5a87 \
+    --container stocksapi \
+    --interactive --command "sh"
     ```
