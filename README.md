@@ -134,21 +134,28 @@ Note: The terraforming commands below have been tested successfully using the fo
     aws ecs describe-task-definition --region us-west-2 --task-definition $TASK_DEFN
     ```
 
-    **Note**: Review the `environment` block. This contains the credentials and a connection string used by the **Stocks API** to connect to the Aurora RDS backend database.
+    **Note**: Review the `environment` block. This contains the database connection string used by the **Stocks API** to connect to the Aurora RDS backend database.
 
     ```
     "environment": [
         {
             "name": "DB_CONNSTR",
             "value": "jdbc:mysql://cloudacademy.cluster-abcd1234.us-west-2.rds.amazonaws.com:3306/cloudacademy"
-        },
+        }
+    ]
+    ```
+
+    **Note**: Review the `secrets` block. This contains the credentials used by the **Stocks API** to authenticate against the Aurora RDS backend database.
+
+    ```
+    "secrets": [
         {
             "name": "DB_USER",
-            "value": "root"
+            "valueFrom": "arn:aws:secretsmanager:us-west-2:1234567890:secret:db-creds-abcde1234567890-1234abcd:username::"
         },
         {
             "name": "DB_PASSWORD",
-            "value": "followthewhiterabbit"
+            "valueFrom": "arn:aws:secretsmanager:us-west-2:1234567890:secret:db-creds-abcde1234567890-1234abcd:password::"
         }
     ]
     ```
