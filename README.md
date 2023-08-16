@@ -4,7 +4,7 @@ The following instructions are provided to demonstrate how to provision a new EC
 An equivalent **EKS** setup is located here:
 https://github.com/cloudacademy/stocks-app-eks
 
-![Stocks App](/docs/stocks.png)
+![Stocks App](/docs/ecs-stocks-ui.png)
 
 ### ECS Architecture
 The following architecture diagram documents an ECS Fargate Cluster, Services, Tasks, ALB, Aurora RDS DB (serverless v1), Secrets Manager, Cloud Map (service discovery), and Stocks cloud native web application setup:
@@ -92,6 +92,15 @@ Note: The terraforming commands below have been tested successfully using the fo
 
     Ready...
     ```
+
+    1.4. Generate a URL for Stock App. Execute the following command:
+    ```
+    echo http://$(terraform output --raw public-alb-fqdn)
+    ```
+
+    Browse to the URL and confirm that the full Stock App system is online:
+
+    ![Stocks App](/docs/ecs-stocks-ui.png)
 
 2. Examine ECS Cluster Resources
 
