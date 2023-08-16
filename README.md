@@ -257,7 +257,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     --interactive --command <COMMAND>
     ```
 
-    APP (frontend) Task Exec Example:
+    App (frontend) Task Exec Example:
 
     ```
     aws ecs execute-command \
