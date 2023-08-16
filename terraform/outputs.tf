@@ -23,6 +23,6 @@ output "ecs-task-execution-role-arn" {
 }
 
 output "web_app_wait_command" {
-  value       = "until curl -Is --max-time 5 http://${module.public_alb.dns} | grep '200 OK'; do echo preparing...; sleep 5; done; echo; echo -e 'Ready!!'"
+  value       = "until curl -Is --max-time 5 http://${module.public_alb.dns}/api/stocks/csv | grep 'HTTP/1.1 200'; do echo preparing...; sleep 5; done; echo; echo -e 'Ready...'"
   description = "Test command - tests readiness of the web app"
 }

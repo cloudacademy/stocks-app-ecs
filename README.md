@@ -78,7 +78,7 @@ Note: The terraforming commands below have been tested successfully using the fo
 
     Example Script:
     ```
-    until curl -Is --max-time 5 http://ecs-demo-public-alb-1234567890.us-west-2.elb.amazonaws.com | grep '200 OK'; do echo preparing...; sleep 5; done; echo; echo -e 'Ready!!'
+    until curl -Is --max-time 5 http://ecs-demo-public-alb-1234567890.us-west-2.elb.amazonaws.com/api/stocks/csv | grep 'HTTP/1.1 200'; do echo preparing...; sleep 5; done; echo; echo -e 'Ready...'
     ```
 
     Example Output:
@@ -88,9 +88,9 @@ Note: The terraforming commands below have been tested successfully using the fo
     preparing...
     preparing...
     preparing...
-    HTTP/1.1 200 OK
+    HTTP/1.1 200
 
-    Ready!!
+    Ready...
     ```
 
 2. Examine ECS Cluster Resources
