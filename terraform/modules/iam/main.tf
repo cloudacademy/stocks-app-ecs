@@ -20,9 +20,31 @@ data "aws_iam_policy" "amazon_ec2_container_service_for_ec2_role" {
   name = "AmazonEC2ContainerServiceforEC2Role"
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy-attach" {
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_attach" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = data.aws_iam_policy.amazon_ec2_container_service_for_ec2_role.arn
+}
+
+resource "aws_iam_role_policy" "secretsmanager_policy" {
+  name = "password-policy-secretsmanager"
+  role = aws_iam_role.ecs_task_execution_role.id
+
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Action": [
+          "secretsmanager:GetSecretValue"
+        ],
+        "Effect": "Allow",
+        "Resource": [
+          "${var.secretsmanager_db_creds_arn}"
+        ]
+      }
+    ]
+  }
+  EOF
 }
 
 #====================================
@@ -36,7 +58,7 @@ data "aws_iam_policy" "amazon_ssm_managed_instance_core" {
   name = "AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_role_policy_attachment" "ecs-ssm-role-policy-attach" {
+resource "aws_iam_role_policy_attachment" "ecs_ssm_role_policy_attach" {
   role       = aws_iam_role.ecs_exec_task_role.name
   policy_arn = data.aws_iam_policy.amazon_ssm_managed_instance_core.arn
 }

@@ -44,11 +44,14 @@ variable "service_config" {
       dns  = string
       port = number
     }))
-    environment = list(object({
+    secrets = optional(list(object({
       name  = string
       value = string
-    }))
-
+    })))
+    environment = optional(list(object({
+      name  = string
+      value = string
+    })))
     alb_target_group = object({
       port              = number
       protocol          = string
@@ -56,7 +59,6 @@ variable "service_config" {
       health_check_path = string
       priority          = number
     })
-
     auto_scaling = object({
       max_capacity = number
       min_capacity = number
@@ -89,5 +91,9 @@ variable "public_alb_fqdn" {
 }
 
 variable "service_registry_arn" {
+  type = string
+}
+
+variable "secretsmanager_db_creds_arn" {
   type = string
 }

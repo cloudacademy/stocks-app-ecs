@@ -63,19 +63,20 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       cpu       = each.value.cpu
       memory    = each.value.memory
       essential = true
-
+      secrets = each.key == "Stocks-API" ? [
+        {
+          name      = "DB_USER"
+          valueFrom = "${var.secretsmanager_db_creds_arn}:username::" # aws secrets manager
+        },
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${var.secretsmanager_db_creds_arn}:password::" # aws secrets manager
+        }
+      ] : []
       environment = each.key == "Stocks-API" ? [
         {
           name  = "DB_CONNSTR"
           value = "jdbc:mysql://${var.db_endpoint}:3306/cloudacademy"
-        },
-        {
-          name  = "DB_USER"
-          value = each.value.environment[index(each.value.environment.*.name, "DB_USER")].value
-        },
-        {
-          name  = "DB_PASSWORD"
-          value = each.value.environment[index(each.value.environment.*.name, "DB_PASSWORD")].value
         }
         ] : [ # "Stocks-APP"
         {
@@ -84,7 +85,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         },
         {
           name  = "NGINX_APP_APIHOSTPORT"
-          value = join(":", [var.service_config["Stocks-API"].service_discovery.dns, var.service_config["Stocks-API"].service_discovery.port]) # cloud map service discovery
+          value = join(":", [var.service_config["Stocks-API"].service_discovery.dns, var.service_config["Stocks-API"].service_discovery.port]) # aws cloud map service discovery
         }
       ]
 
@@ -157,7 +158,7 @@ resource "aws_ecs_service" "private_service" {
   }
 
   service_registries {
-    registry_arn = var.service_registry_arn
+    registry_arn = var.service_registry_arn # aws cloud map service discovery registration
   }
 }
 

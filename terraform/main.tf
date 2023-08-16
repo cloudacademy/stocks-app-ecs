@@ -29,9 +29,19 @@ locals {
 
 #====================================
 
+module "secretsmanager" {
+  source          = "./modules/secretsmanager"
+  master_username = local.rds.master_username
+  master_password = local.rds.master_password
+  db_name         = local.rds.db_name
+}
+
+#====================================
+
 module "iam" {
-  source   = "./modules/iam"
-  app_name = var.app_name
+  source                      = "./modules/iam"
+  app_name                    = var.app_name
+  secretsmanager_db_creds_arn = module.secretsmanager.arn
 }
 
 #====================================
@@ -69,15 +79,6 @@ module "cloudmap" {
 
 #====================================
 
-module "secretsmanager" {
-  source          = "./modules/secretsmanager"
-  master_username = local.rds.master_username
-  master_password = local.rds.master_password
-  db_name         = local.rds.db_name
-}
-
-#====================================
-
 module "aurora" {
   source              = "./modules/aurora"
   vpc_id              = module.vpc.vpc_id
@@ -107,6 +108,7 @@ module "ecs" {
   db_endpoint                  = module.aurora.db_endpoint
   public_alb_fqdn              = module.public_alb.dns
   service_registry_arn         = module.cloudmap.service_registry_arn
+  secretsmanager_db_creds_arn  = module.secretsmanager.arn
 
   depends_on = [
     module.iam,

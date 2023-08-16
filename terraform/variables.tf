@@ -75,10 +75,6 @@ variable "microservice_config" {
       dns  = string
       port = number
     }))
-    environment = optional(list(object({
-      name  = string
-      value = string
-    })))
     alb_target_group = optional(object({
       port              = number
       protocol          = string

@@ -44,20 +44,6 @@ microservice_config = {
       dns = "api.cloudacademy.terraform.local",
       port = 8080
     }
-    environment = [
-      {
-      name = "DB_CONNSTR"
-      value = "" # dynamically injected at provisioning time by terraform
-      },
-      {
-      name = "DB_USER"
-      value = "root"
-      },
-      {
-      name = "DB_PASSWORD"
-      value = "followthewhiterabbit"
-      }
-    ]
     auto_scaling = {
       max_capacity = 4
       min_capacity = 2
@@ -78,16 +64,6 @@ microservice_config = {
     cpu            = 256
     memory         = 512
     desired_count  = 2
-    environment = [
-      {
-      name = "REACT_APP_APIHOSTPORT"
-      value = "" # dynamically injected at provisioning time by terraform
-      },
-      {
-      name = "NGINX_APP_APIHOSTPORT"
-      value = "api.cloudacademy.terraform.local:8080" # cloud map service discovery
-      }
-    ]
     alb_target_group = {
       port              = 80
       protocol          = "HTTP"
