@@ -109,12 +109,4 @@ module "ecs" {
   public_alb_fqdn              = module.public_alb.dns
   service_registry_arn         = module.cloudmap.service_registry_arn
   secretsmanager_db_creds_arn  = module.secretsmanager.arn
-
-  depends_on = [
-    module.iam,
-    module.vpc,
-    module.public_alb,
-    module.secretsmanager,
-    module.aurora,
-  ]
 }
