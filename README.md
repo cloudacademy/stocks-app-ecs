@@ -1,3 +1,6 @@
+![Build Status](https://github.com/cloudacademy/stocks-app-ecs/actions/workflows/release.yml/badge.svg) 
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/cloudacademy/stocks-app-ecs)
+
 ## ECS and Stocks Cloud Native App Deployment
 The following instructions are provided to demonstrate how to provision a new ECS cluster and automatically deploy a fully functional Stocks cloud native web application into it.
 
