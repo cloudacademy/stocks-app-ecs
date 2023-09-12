@@ -3,7 +3,8 @@ resource "random_id" "db_creds" {
 }
 
 resource "aws_secretsmanager_secret" "db_creds" {
-  name = "db-creds-${random_id.db_creds.hex}"
+  name        = "db-creds-${random_id.db_creds.hex}"
+  description = "db-creds"
 }
 
 resource "aws_secretsmanager_secret_version" "db_creds" {
