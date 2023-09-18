@@ -37,16 +37,16 @@ microservice_config = {
     is_public      = false
     container_port = 8080
     host_port      = 8080
-    cpu            = 256
-    memory         = 512
-    desired_count  = 2
     service_discovery = {
       dns = "api.cloudacademy.terraform.local",
       port = 8080
     }
+    cpu            = 512
+    memory         = 1024
+    desired_count  = 1
     auto_scaling = {
-      max_capacity = 4
-      min_capacity = 2
+      min_capacity = 1
+      max_capacity = 2
       cpu = {
         target_value = 75
       }
@@ -61,9 +61,6 @@ microservice_config = {
     is_public      = true
     container_port = 8080
     host_port      = 8080
-    cpu            = 256
-    memory         = 512
-    desired_count  = 2
     alb_target_group = {
       port              = 80
       protocol          = "HTTP"
@@ -71,9 +68,12 @@ microservice_config = {
       health_check_path = "/"
       priority          = 2
     }
+    cpu            = 512
+    memory         = 1024
+    desired_count  = 1
     auto_scaling = {
-      max_capacity = 4
-      min_capacity = 2
+      min_capacity = 1
+      max_capacity = 2
       cpu = {
         target_value = 75
       }
