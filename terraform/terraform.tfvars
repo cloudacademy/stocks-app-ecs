@@ -41,8 +41,8 @@ microservice_config = {
       dns = "api.cloudacademy.terraform.local",
       port = 8080
     }
-    cpu            = 512
-    memory         = 1024
+    cpu            = 256
+    memory         = 512
     desired_count  = 1
     auto_scaling = {
       min_capacity = 1
@@ -68,8 +68,8 @@ microservice_config = {
       health_check_path = "/"
       priority          = 2
     }
-    cpu            = 512
-    memory         = 1024
+    cpu            = 256
+    memory         = 512
     desired_count  = 1
     auto_scaling = {
       min_capacity = 1
