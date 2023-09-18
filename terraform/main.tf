@@ -98,8 +98,6 @@ module "ecs" {
   app_services                 = var.app_services
   region                       = var.region
   service_config               = var.microservice_config
-  ecs_task_execution_role_arn  = module.iam.ecs_task_execution_role_arn
-  ecs_exec_task_role_arn       = module.iam.ecs_exec_task_role_arn
   vpc_id                       = module.vpc.vpc_id
   private_subnets              = module.vpc.private_subnets
   public_subnets               = module.vpc.public_subnets
@@ -109,4 +107,8 @@ module "ecs" {
   public_alb_fqdn              = module.public_alb.dns
   service_registry_arn         = module.cloudmap.service_registry_arn
   secretsmanager_db_creds_arn  = module.secretsmanager.arn
+
+  # IAM ECS Role ARNs
+  ecs_task_execution_role_arn = module.iam.ecs_task_execution_role_arn
+  ecs_exec_task_role_arn      = module.iam.ecs_exec_task_role_arn
 }
