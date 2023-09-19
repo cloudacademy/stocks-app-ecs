@@ -63,6 +63,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       cpu       = each.value.cpu
       memory    = each.value.memory
       essential = true
+
       secrets = each.key == "Stocks-API" ? [
         {
           name      = "DB_USER"
@@ -73,6 +74,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
           valueFrom = "${var.secretsmanager_db_creds_arn}:password::" # aws secrets manager
         }
       ] : []
+
       environment = each.key == "Stocks-API" ? [
         {
           name  = "DB_CONNSTR"
@@ -86,6 +88,10 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         {
           name  = "NGINX_APP_APIHOSTPORT"
           value = join(":", [var.service_config["Stocks-API"].service_discovery.dns, var.service_config["Stocks-API"].service_discovery.port]) # aws cloud map service discovery
+        },
+        {
+          name  = "NGINX_DNS_RESOLVER"
+          value = "10.10.0.2"
         }
       ]
 
