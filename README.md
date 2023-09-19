@@ -28,7 +28,7 @@ Implements a web UI using the following languages/frameworks:
 Source Code and Artifacts:
 
 - GitHub Repo: https://github.com/cloudacademy/stocks-app
-- Container Image: [cloudacademydevops/stocks-app:v2](https://hub.docker.com/r/cloudacademydevops/stocks-app)
+- Container Image: [cloudacademydevops/stocks-app:v3](https://hub.docker.com/r/cloudacademydevops/stocks-app)
 
 #### Stocks API
 
@@ -190,30 +190,27 @@ Note: The terraforming commands below have been tested successfully using the fo
     - `NGINX_APP_APIHOSTPORT` is dynamically inserted into the Stock App's Nginx config file (see below) to proxy API traffic downstream to the API tasks. [AWS Cloud Map](https://aws.amazon.com/cloud-map/) is used to provide service discovery for the API tasks. The FQDN `api.cloudacademy.terraform.local` is automatically registered within Route53 by Cloud Map and contains records for each individual API task (private IP address) spun up in the ECS cluster.
 
     ```
-    upstream api-backend {
-    server ${NGINX_APP_APIHOSTPORT};
-    keepalive 20;
-    }
-
     server {
-    listen 8080;
-    add_header Cache-Control no-cache;
+        listen 8080;
+        set $target ${NGINX_APP_APIHOSTPORT};
 
-    location / {
-        root   /usr/share/nginx/html;
-        index  index.html index.htm;
-        try_files $uri $uri/ /index.html;
-        expires -1;
-    }
+        add_header Cache-Control no-cache;
 
-    location /api/stocks/csv {
-        proxy_pass http://api-backend;
-    }
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+            try_files $uri $uri/ /index.html;
+            expires -1;
+        }
 
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   /usr/share/nginx/html;
-    }
+        location /api/stocks/csv {
+            proxy_pass http://$target;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
     }
     ```
 

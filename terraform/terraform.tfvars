@@ -57,7 +57,7 @@ microservice_config = {
   },
   "Stocks-App" = {
     name           = "stocksapp"
-    image          = "cloudacademydevops/stocks-app:v2"
+    image          = "cloudacademydevops/stocks-app:v3"
     is_public      = true
     container_port = 8080
     host_port      = 8080
