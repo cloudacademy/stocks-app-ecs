@@ -35,10 +35,10 @@ resource "aws_rds_cluster" "cloudacademy" {
   vpc_security_group_ids  = [aws_security_group.allow_mysql.id]
 
   scaling_configuration {
-    auto_pause               = true
-    min_capacity             = 1
-    max_capacity             = 1
-    seconds_until_auto_pause = 300
+    auto_pause               = false # prevent pause (mostly for lab purposes)
+    min_capacity             = 2
+    max_capacity             = 2
+    seconds_until_auto_pause = 3600
     timeout_action           = "ForceApplyCapacityChange"
   }
 }
