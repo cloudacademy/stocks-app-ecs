@@ -97,6 +97,7 @@ module "ecs" {
   app_name                     = var.app_name
   app_services                 = var.app_services
   region                       = var.region
+  vpc_cidr                     = var.cidr
   service_config               = var.microservice_config
   vpc_id                       = module.vpc.vpc_id
   private_subnets              = module.vpc.private_subnets

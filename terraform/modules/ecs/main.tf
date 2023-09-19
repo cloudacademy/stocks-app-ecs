@@ -93,7 +93,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         },
         {
           name  = "NGINX_DNS_RESOLVER"
-          value = cidrhost(var.cidr, 2) #VPC DNS
+          value = cidrhost(var.vpc_cidr, 2) #VPC DNS
         }
       ]
 
