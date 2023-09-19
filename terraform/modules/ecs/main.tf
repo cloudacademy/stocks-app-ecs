@@ -76,11 +76,13 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       ] : []
 
       environment = each.key == "Stocks-API" ? [
+        ##### Stocks-API
         {
           name  = "DB_CONNSTR"
           value = "jdbc:mysql://${var.db_endpoint}:3306/cloudacademy"
         }
-        ] : [ # "Stocks-APP"
+        ] : [
+        ##### Stocks-APP (frontend)
         {
           name  = "REACT_APP_APIHOSTPORT"
           value = var.public_alb_fqdn
@@ -91,7 +93,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
         },
         {
           name  = "NGINX_DNS_RESOLVER"
-          value = "10.10.0.2"
+          value = cidrhost(var.cidr, 2) #VPC DNS
         }
       ]
 
