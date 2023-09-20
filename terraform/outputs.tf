@@ -10,10 +10,6 @@ output "public-subnets" {
   value = module.vpc.public_subnets
 }
 
-output "public-alb-target-groups" {
-  value = module.public_alb.target_groups
-}
-
 output "public-alb-fqdn" {
   value = module.public_alb.dns
 }
