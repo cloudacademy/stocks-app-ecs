@@ -170,7 +170,7 @@ Note: The terraforming commands below have been tested successfully using the fo
     aws ecs describe-task-definition --region us-west-2 --task-definition $TASK_DEFN
     ```
 
-    **Note**: Review the `environment` block. This should now contain the ALB FQDN and API service discovery FQDN. Terraform injects the correct values at provisioning time dynamically.
+    **Note**: Review the `environment` block. This should now contain the ALB FQDN, the API service discovery FQDN, and the VPC's DNS IP address. Terraform injects the correct values at provisioning time dynamically.
 
     ```
     "environment": [
@@ -181,14 +181,21 @@ Note: The terraforming commands below have been tested successfully using the fo
         {
             "name": "NGINX_APP_APIHOSTPORT",
             "value": "api.cloudacademy.terraform.local:8080"
+        },
+        {
+          name  = "NGINX_DNS_RESOLVER"
+          value = "10.10.0.2"
         }
     ]
     ```
 
     - `REACT_APP_APIHOSTPORT` represents the public facing ALB that the Stock App sits behind. This value is loaded dynamically into the web app, informing it where to route all AJAX calls to (back via the ALB).
 
-    - `NGINX_APP_APIHOSTPORT` is dynamically inserted into the Stock App's Nginx config file (see below) to proxy API traffic downstream to the API tasks. [AWS Cloud Map](https://aws.amazon.com/cloud-map/) is used to provide service discovery for the API tasks. The FQDN `api.cloudacademy.terraform.local` is automatically registered within Route53 by Cloud Map and contains records for each individual API task (private IP address) spun up in the ECS cluster.
+    - `NGINX_APP_APIHOSTPORT` is dynamically inserted at launch time into the Stock App's Nginx config file (see below) to proxy API traffic downstream to the API tasks. [AWS Cloud Map](https://aws.amazon.com/cloud-map/) is used to provide service discovery for the API tasks. The FQDN `api.cloudacademy.terraform.local` is automatically registered within Route53 by Cloud Map and contains records for each individual API task (private IP address) spun up in the ECS cluster.
 
+    - `NGINX_DNS_RESOLVER` is dynamically inserted at launch time into the Stock App's Nginx config file (see below) to resolve the `proxy_pass` target host FQDN.
+
+    **Before** (Stocks App Container Image)
     ```
     server {
         listen 8080;
@@ -204,6 +211,38 @@ Note: The terraforming commands below have been tested successfully using the fo
         }
 
         location /api/stocks/csv {
+            resolver         ${NGINX_DNS_RESOLVER} valid=300s;
+            resolver_timeout 10s;
+
+            proxy_pass http://$target;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+    }
+    ```
+
+    **After** (Stocks App Container Instance)
+    ```
+    server {
+        listen 8080;
+        set $target api.cloudacademy.terraform.local:8080;
+
+        add_header Cache-Control no-cache;
+
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+            try_files $uri $uri/ /index.html;
+            expires -1;
+        }
+
+        location /api/stocks/csv {
+            resolver         10.10.0.2 valid=300s;
+            resolver_timeout 10s;
+
             proxy_pass http://$target;
         }
 
