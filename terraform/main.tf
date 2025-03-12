@@ -24,6 +24,12 @@ locals {
     master_username = "root"
     master_password = "followthewhiterabbit"
     db_name         = "cloudacademy"
+    engine          = "aurora-mysql"
+    engine_version  = "8.0.mysql_aurora.3.08.0"
+    acu = {
+      min = 0.5
+      max = 1.0
+    }
   }
 }
 
@@ -88,6 +94,10 @@ module "aurora" {
   master_password     = local.rds.master_password
   db_name             = local.rds.db_name
   secret_manager_arn  = module.secretsmanager.arn
+  engine              = local.rds.engine
+  engine_version      = local.rds.engine_version
+  acu_min             = local.rds.acu.min
+  acu_max             = local.rds.acu.max
 }
 
 #====================================
